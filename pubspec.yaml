@@ -34,6 +34,27 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  provider: ^6.1.5
+  dio: ^5.9.0
+  cached_network_image: ^3.4.1
+  shared_preferences: ^2.5.3
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.5
+  flutter_staggered_grid_view: ^0.7.0
+  photo_view: ^0.15.0
+  animations: ^2.0.11
+  workmanager: ^0.9.0+3
+  flutter_colorpicker: ^1.1.0
+  salomon_bottom_bar: ^3.3.2
+  shimmer: ^3.0.0
+  video_player: ^2.11.1
+  animated_text_kit: ^4.3.0
+  wallpaper_manager_plus: ^2.0.3
+  permission_handler: ^11.3.1
+  gal: ^2.3.2
+  url_launcher: ^6.3.2
+  share_plus: ^13.1.0
 
 dev_dependencies:
   flutter_test:
@@ -67,7 +88,30 @@ flutter:
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package
+  assets:
+    - assets/
 
+  fonts:
+    - family: BespokeSans
+      fonts:
+        - asset: assets/fonts/RobotoSlab-Black.ttf
+          weight: 300
+        - asset: assets/fonts/RobotoSlab-Bold.ttf
+          weight: 400
+        - asset: assets/fonts/RobotoSlab-ExtraBold.ttf
+          weight: 500
+        - asset: assets/fonts/RobotoSlab-ExtraLight.ttf
+          weight: 700
+        - asset: assets/fonts/RobotoSlab-Light.ttf
+          weight: 800
+        - asset: assets/fonts/RobotoSlab-Medium.ttf
+          weight: 300
+        - asset: assets/fonts/RobotoSlab-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/RobotoSlab-SemiBold.ttf
+          weight: 500
+        - asset: assets/fonts/RobotoSlab-Thin.ttf
+          weight: 700
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a
