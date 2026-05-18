@@ -69,9 +69,7 @@ class _LiveWallpaperDetailScreenState extends State<LiveWallpaperDetailScreen> {
     try {
       await ExternalLinks.shareWallpaper(
         url: widget.wallpaper.imageUrl,
-        title: widget.wallpaper.eidLabel.isEmpty
-            ? 'Eid Live Wallpaper'
-            : widget.wallpaper.eidLabel,
+        title: 'Stitch Live Wallpaper',
         isVideo: true,
       );
     } catch (_) {

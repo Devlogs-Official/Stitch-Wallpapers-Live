@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../core/constants/app_constants.dart';
 import '../core/navigation/app_page_transitions.dart';
 import '../core/external/external_links.dart';
@@ -8,7 +7,6 @@ import '../models/wallpaper_model.dart';
 import '../providers/favorites_provider.dart';
 import '../providers/wallpaper_provider.dart';
 import '../theme/app_colors.dart';
-import '../widgets/live_wallpaper_card.dart';
 import '../widgets/shimmer_placeholders.dart';
 import '../widgets/wallpaper_grid_card.dart';
 import 'static_wallpaper_detail_screen.dart';
@@ -60,46 +58,31 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.background,
-        centerTitle: true,
-        title: Text(
+        title: const Text(
           "Stitch Wallpapers",
+          style: TextStyle(
+            fontFamily: "RobotoSlab",
+            fontWeight: FontWeight.w800
+          ),
         ),
-        leading: InkWell(
-          onTap: () => Scaffold.of(context).openDrawer(),
-          child: Image.asset(
-            "assets/icons/menu-button.png",
-            height: 24,
-            width: 24,
+        leading: Builder(
+          builder: (context) => IconButton(
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+            icon: Image.asset(
+              "assets/icons/menu-button.png",
+              height: 22,
+              width: 22,
+              color: Colors.white,
+            ),
           ),
         ),
       ),
       body: SafeArea(
         child: Column(
           children: <Widget>[
-            // Padding(
-            //   padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            //   child: Row(
-            //     children: <Widget>[
-            //       Builder(
-            //         builder: (context) => IconButton(
-            //           onPressed: () => Scaffold.of(context).openDrawer(),
-            //           icon: const Icon(Icons.menu_rounded),
-            //         ),
-            //       ),
-            //       const SizedBox(width: 4),
-            //       Expanded(
-            //         child: Text(
-            //           'Eid Wallpapers',
-            //           style: TextStyle(
-            //             fontSize: 30,
-            //             fontWeight: FontWeight.w800,
-            //             color: Theme.of(context).colorScheme.onSurface,
-            //           ),
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
+            const SizedBox(height: 12,),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async {
@@ -111,13 +94,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: CustomScrollView(
                   controller: _scrollController,
                   slivers: <Widget>[
-                    SliverToBoxAdapter(
-                      child: LiveWallpaperCard(
-                        onTap: () {
-                          widget.onOpenLiveTab?.call();
-                        },
-                      ),
-                    ),
+                    // SliverToBoxAdapter(
+                    //   child: LiveWallpaperCard(
+                    //     onTap: () {
+                    //       widget.onOpenLiveTab?.call();
+                    //     },
+                    //   ),
+                    // ),
                     if (wallpaperProvider.isLoadingStatic &&
                         wallpaperProvider.staticWallpapers.isEmpty)
                       const SliverToBoxAdapter(
@@ -204,105 +187,161 @@ class _HomeDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final bool isDark = theme.brightness == Brightness.dark;
-    final Color topColor = isDark ? const Color(0xFF0E1117) : AppColors.primary;
-    final Color bottomColor = isDark
-        ? const Color(0xFF182230)
-        : const Color(0xFF111827);
-    final Color borderColor = Colors.white.withValues(alpha: 0.12);
-    final Color tileColor = Colors.white.withValues(alpha: 0.08);
-    final Color titleColor = Colors.white.withValues(alpha: 0.96);
-    final Color subtitleColor = Colors.white.withValues(alpha: 0.68);
-
     return Drawer(
+      width: MediaQuery.of(context).size.width * 0.82,
       backgroundColor: Colors.transparent,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
+
+      child: Container(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: <Color>[topColor, bottomColor],
+            colors: [
+              Colors.cyan,
+              Colors.cyan,
+              Colors.cyan,
+              // Colors.white,
+            ],
           ),
         ),
+
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 18,
+              vertical: 18,
+            ),
+
             child: Column(
-              children: <Widget>[
-                _DrawerHeader(
-                  titleColor: titleColor,
-                  subtitleColor: subtitleColor,
-                  borderColor: borderColor,
-                ),
-                const SizedBox(height: 22),
-                Material(
-                  color: tileColor,
-                  borderRadius: BorderRadius.circular(18),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(18),
-                    onTap: () async {
-                      Navigator.of(context).pop();
-                      try {
-                        await ExternalLinks.shareApp();
-                      } catch (_) {
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            behavior: SnackBarBehavior.floating,
-                            content: Text(
-                              'Sharing is unavailable on this device.',
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 15,
-                      ),
-                      child: Row(
-                        children: <Widget>[
-                          Container(
-                            width: 42,
-                            height: 42,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: borderColor),
-                            ),
-                            child: const Icon(
-                              Icons.share_rounded,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Text(
-                            'Share App',
-                            style: TextStyle(
-                              color: titleColor,
-                              fontFamily: 'Chillax',
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
+              children: [
+
+                /// HEADER
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(28),
+
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.cyan.withOpacity(0.18),
+                        Colors.white.withOpacity(0.05),
+                      ],
                     ),
+
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.08),
+                    ),
+
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.cyan.withOpacity(0.18),
+                        blurRadius: 25,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+
+                  child: Column(
+                    children: [
+
+                      /// IMAGE
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+
+                        child: Image.asset(
+                          "assets/icons/drawer.jpg",
+                          height: 120,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      /// TITLE
+                      const Text(
+                        "Stitch Wallpapers",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      Text(
+                        "Cute • Live • HD Wallpapers",
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+
+                const SizedBox(height: 28),
+
+                /// MENU ITEMS
+                _drawerTile(
+                  icon: Icons.home_rounded,
+                  title: "Home",
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                ),
+
+                const SizedBox(height: 14),
+
+
+                _drawerTile(
+                  icon: Icons.share_rounded,
+                  title: "Share App",
+                  onTap: () async {
+                    Navigator.pop(context);
+
+                    try {
+                      await ExternalLinks.shareApp();
+                    } catch (_) {
+                      if (!context.mounted) return;
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "Sharing unavailable",
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                ),
+
+                const SizedBox(height: 14),
+
+                _drawerTile(
+                  icon: Icons.info_outline_rounded,
+                  title: "About App",
+                  onTap: () {},
+                ),
+
                 const Spacer(),
+
+                /// VERSION
                 Text(
-                  'Version ${AppConstants.appVersion}',
+                  "Version 1.0.0",
                   style: TextStyle(
-                    color: subtitleColor,
-                    fontFamily: 'Chillax',
+                    color: Colors.white.withOpacity(0.45),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
+
+                const SizedBox(height: 10),
               ],
             ),
           ),
@@ -310,88 +349,90 @@ class _HomeDrawer extends StatelessWidget {
       ),
     );
   }
-}
 
-class _DrawerHeader extends StatelessWidget {
-  const _DrawerHeader({
-    required this.titleColor,
-    required this.subtitleColor,
-    required this.borderColor,
-  });
+  Widget _drawerTile({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
 
-  final Color titleColor;
-  final Color subtitleColor;
-  final Color borderColor;
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: borderColor),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.20),
-            blurRadius: 22,
-            offset: const Offset(0, 12),
+        child: Ink(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
           ),
-        ],
-      ),
-      child: Column(
-        children: <Widget>[
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: <Color>[
-                  AppColors.primary.withValues(alpha: 0.95),
-                  const Color(0xFF8BC7FF),
-                ],
-              ),
-              boxShadow: <BoxShadow>[
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.34),
-                  blurRadius: 24,
-                  offset: const Offset(0, 10),
+
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+
+            color: Colors.white.withOpacity(0.05),
+
+            border: Border.all(
+              color: Colors.white.withOpacity(0.06),
+            ),
+          ),
+
+          child: Row(
+            children: [
+
+              /// ICON BOX
+              Container(
+                width: 48,
+                height: 48,
+
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.cyan.withOpacity(0.8),
+                      Colors.cyanAccent.withOpacity(0.4),
+                    ],
+                  ),
+
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.cyan.withOpacity(0.3),
+                      blurRadius: 12,
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: const Icon(
-              Icons.auto_awesome_rounded,
-              color: Colors.white,
-              size: 34,
-            ),
+
+                child:  Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+
+              const SizedBox(width: 16),
+
+              /// TITLE
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white.withOpacity(0.4),
+                size: 16,
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Eid Wallpapers',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: titleColor,
-              fontFamily: 'Chillax',
-              fontSize: 23,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Celebrate Eid Beautifully',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: subtitleColor,
-              fontFamily: 'Chillax',
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

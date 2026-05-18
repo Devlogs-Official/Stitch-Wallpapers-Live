@@ -102,12 +102,12 @@ class _PremiumBottomNavBar extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
     final Color background =
-        (isDark ? const Color(0xFF101722) : Colors.white).withValues(alpha: 0.82);
+        (isDark ? const Color(0xFF101722) : AppColors.primary).withValues(alpha: 0.82);
     final Color border =
         (isDark ? const Color(0xFF314156) : AppColors.border).withValues(alpha: 0.72);
-    final Color active = isDark ? const Color(0xFF8BC7FF) : AppColors.primary;
+    final Color active = isDark ? AppColors.primary : AppColors.background;
     final Color inactive =
-        isDark ? const Color(0xFF9AA7BA) : AppColors.textSecondary;
+        isDark ? const Color(0xFF9AA7BA) : AppColors.background;
 
     return SafeArea(
       minimum: const EdgeInsets.fromLTRB(18, 0, 18, 12),
@@ -294,18 +294,18 @@ class _ExitAppDialog extends StatelessWidget {
                   ),
                   child: const Icon(
                     Icons.power_settings_new_rounded,
-                    color: Color(0xFF2D3C59),
+                    color: Colors.cyan,
                     size: 28,
                   ),
                 ),
                 const SizedBox(height: 14),
                 const Text(
-                  'Exit Eid Wallpapers?',
+                  'Exit Stitch Wallpapers?',
                   style: TextStyle(
-                    fontFamily: 'Chillax',
+                    fontFamily: 'RobotoSlab',
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF151A24),
+                    color: Colors.cyan,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -313,9 +313,9 @@ class _ExitAppDialog extends StatelessWidget {
                   'Are you sure you want to close the app right now?',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontFamily: 'Chillax',
+                    fontFamily: 'RobotoSlab',
                     fontSize: 14,
-                    color: Color(0xFF657089),
+                    color: Colors.cyan,
                   ),
                 ),
                 const SizedBox(height: 18),
@@ -334,9 +334,9 @@ class _ExitAppDialog extends StatelessWidget {
                         child: const Text(
                           'Stay',
                           style: TextStyle(
-                            fontFamily: 'Chillax',
+                            fontFamily: 'RobotoSlab',
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF2D3C59),
+                            color: Colors.cyan,
                           ),
                         ),
                       ),
@@ -346,7 +346,7 @@ class _ExitAppDialog extends StatelessWidget {
                       child: FilledButton(
                         onPressed: () => Navigator.of(context).pop(true),
                         style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF2D3C59),
+                          backgroundColor:  Colors.cyan,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -355,7 +355,7 @@ class _ExitAppDialog extends StatelessWidget {
                         child: const Text(
                           'Exit',
                           style: TextStyle(
-                            fontFamily: 'Chillax',
+                            fontFamily: 'RobotoSlab',
                             fontWeight: FontWeight.w600,
                           ),
                         ),

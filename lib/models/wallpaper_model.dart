@@ -5,7 +5,6 @@ class WallpaperModel {
     required this.imageUrl,
     required this.thumbnailUrl,
     required this.isLive,
-    required this.eidLabel,
     this.createdAt,
   });
 
@@ -14,7 +13,6 @@ class WallpaperModel {
   final String imageUrl;
   final String thumbnailUrl;
   final bool isLive;
-  final String eidLabel;
   final DateTime? createdAt;
 
   factory WallpaperModel.fromJson(Map<String, dynamic> json) {
@@ -24,7 +22,6 @@ class WallpaperModel {
       imageUrl: json['image_url']?.toString() ?? '',
       thumbnailUrl: json['thumbnail_url']?.toString() ?? '',
       isLive: _readBool(json['is_live']),
-      eidLabel: json['eid_label']?.toString() ?? '',
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'].toString())
           : null,
@@ -38,7 +35,6 @@ class WallpaperModel {
       'image_url': imageUrl,
       'thumbnail_url': thumbnailUrl,
       'is_live': isLive ? 1 : 0,
-      'eid_label': eidLabel,
       'created_at': createdAt?.toIso8601String(),
     };
   }

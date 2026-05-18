@@ -50,7 +50,7 @@ class _SplashScreenState extends State<SplashScreen> {
           fit: StackFit.expand,
           children: <Widget>[
             Image.asset(
-              'assets/eid-splash.webp',
+              'assets/icons/splash.jpg',
               fit: BoxFit.cover,
             ),
             Container(
@@ -86,15 +86,25 @@ class _SplashLoader extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        const SizedBox(
-          width: 32,
-          height: 32,
-          child: CircularProgressIndicator(
-            strokeWidth: 2.8,
-            color: Colors.white,
+
+        // Modern Linear Loader
+        ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: SizedBox(
+            width: 180,
+            height: 6,
+            child: const LinearProgressIndicator(
+              backgroundColor: Colors.white24,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Colors.cyan,
+              ),
+            ),
           ),
         ),
-        const SizedBox(height: 10),
+
+        const SizedBox(height: 16),
+
+        // Shimmer Text
         Shimmer.fromColors(
           baseColor: Colors.white70,
           highlightColor: Colors.white,
@@ -104,6 +114,7 @@ class _SplashLoader extends StatelessWidget {
               color: Colors.white,
               fontSize: 14,
               fontWeight: FontWeight.w600,
+              letterSpacing: 1,
             ),
           ),
         ),

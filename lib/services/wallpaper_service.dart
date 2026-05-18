@@ -118,7 +118,7 @@ class WallpaperService {
       });
       return const WallpaperApplyResult(
         success: true,
-        message: 'Pick "Eid Wallpapers" to set it.',
+        message: 'Pick "Stitch Wallpapers" to set it.',
       );
     } on PlatformException catch (e) {
       debugPrint('Live wallpaper apply error: ${e.code} ${e.message}');

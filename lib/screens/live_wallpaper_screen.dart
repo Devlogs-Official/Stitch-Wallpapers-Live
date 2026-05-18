@@ -67,11 +67,12 @@ class _LiveWallpaperScreenState extends State<LiveWallpaperScreen> {
                       children: <TextSpan>[
                         const TextSpan(
                           text: 'Live',
-                          style: TextStyle(color: AppColors.primary),
+                          style: TextStyle(color: AppColors.primary,fontFamily: "RobotoSlab"),
                         ),
                         TextSpan(
                           text: ' Wallpapers',
                           style: TextStyle(
+                            fontFamily: "RobotoSlab",
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),

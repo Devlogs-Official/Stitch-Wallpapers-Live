@@ -90,9 +90,11 @@ flutter:
   # https://flutter.dev/to/asset-from-package
   assets:
     - assets/
+    - assets/icons/
+    - assets/fonts/
 
   fonts:
-    - family: BespokeSans
+    - family: RobotoSlab
       fonts:
         - asset: assets/fonts/RobotoSlab-Black.ttf
           weight: 300

@@ -79,9 +79,7 @@ class _StaticWallpaperDetailScreenState
     try {
       await ExternalLinks.shareWallpaper(
         url: widget.wallpaper.imageUrl,
-        title: widget.wallpaper.eidLabel.isEmpty
-            ? 'Eid Wallpaper'
-            : widget.wallpaper.eidLabel,
+        title: 'Stitch Wallpaper',
         isVideo: false,
       );
     } catch (_) {
@@ -132,7 +130,7 @@ class _StaticWallpaperDetailScreenState
                   top: 8,
                   left: 12,
                   child: _CircleButton(
-                    icon: Icons.arrow_back,
+                    icon: Icons.cancel_outlined,
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ),
@@ -204,7 +202,7 @@ class _DetailActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color start = isPrimary ? const Color(0xFF2F80ED) : const Color(0x33FFFFFF);
+    final Color start = isPrimary ? Colors.cyan : const Color(0x33FFFFFF);
     final Color end = isPrimary ? const Color(0xFF8BC7FF) : const Color(0x1FFFFFFF);
 
     return DecoratedBox(
@@ -250,7 +248,7 @@ class _DetailActionButton extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontFamily: 'Chillax',
+                        fontFamily: 'RobotoSlab',
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                       ),
@@ -275,21 +273,14 @@ class _CircleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+      margin: const EdgeInsets.all(3),
+      decoration: const BoxDecoration(
+        color: Colors.white,
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.55)),
       ),
-      child: Container(
-        margin: const EdgeInsets.all(3),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-        ),
-        child: IconButton(
-          icon: Icon(icon, color: Colors.black87),
-          onPressed: onPressed,
-        ),
+      child: IconButton(
+        icon: Icon(icon, color: Colors.cyan, size: 30,),
+        onPressed: onPressed,
       ),
     );
   }

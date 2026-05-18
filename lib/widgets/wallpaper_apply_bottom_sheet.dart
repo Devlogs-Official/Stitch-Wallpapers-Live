@@ -146,7 +146,7 @@ class _ApplyTile extends StatelessWidget {
                 child: Text(
                   label,
                   style: const TextStyle(
-                    fontFamily: 'Chillax',
+                    fontFamily: 'RobotoSlab',
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF11151C),
