@@ -24,11 +24,11 @@ class AppConstants {
 
   /// Privacy Policy hosted page (must be reachable from Play Console listing).
   static const String privacyPolicyUrl =
-      'https://www.devlogs.pro/privacy-policy/stitch-wallpapers';
+      'https://www.devlogs.pro/privacy-policy/';
 
   /// Terms & Conditions hosted page.
   static const String termsAndConditionsUrl =
-      'https://www.devlogs.pro/terms-and-conditions/stitch-wallpapers';
+      'https://www.devlogs.pro/terms-and-conditions/';
 
   /// Pre-populated text used by the Share Sheet.
   static String get shareMessage =>

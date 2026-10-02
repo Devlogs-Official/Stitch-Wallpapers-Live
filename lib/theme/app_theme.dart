@@ -29,6 +29,13 @@ class AppTheme {
           side: const BorderSide(color: AppColors.border),
         ),
       ),
+      chipTheme: ChipThemeData(
+        backgroundColor: AppColors.softSurface,
+        selectedColor: AppColors.primary,
+        labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+        side: BorderSide.none,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
     );
   }
 
@@ -39,14 +46,11 @@ class AppTheme {
     final ColorScheme scheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.dark,
-    ).copyWith(
-      surface: darkSurface,
-      onSurface: const Color(0xFFE6E9EF),
-    );
+    ).copyWith(surface: darkSurface, onSurface: const Color(0xFFE6E9EF));
 
     return ThemeData(
       useMaterial3: true,
-      fontFamily: 'Chillax',
+      fontFamily: 'RobotoSlab',
       brightness: Brightness.dark,
       colorScheme: scheme,
       scaffoldBackgroundColor: darkBackground,

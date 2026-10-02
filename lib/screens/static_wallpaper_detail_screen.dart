@@ -8,6 +8,7 @@ import '../providers/wallpaper_apply_provider.dart';
 import '../services/wallpaper_service.dart';
 import '../widgets/shimmer_placeholders.dart';
 import '../widgets/wallpaper_apply_bottom_sheet.dart';
+import '../widgets/wallpaper_detail_actions.dart';
 
 class StaticWallpaperDetailScreen extends StatefulWidget {
   const StaticWallpaperDetailScreen({super.key, required this.wallpaper});
@@ -24,10 +25,11 @@ class _StaticWallpaperDetailScreenState
   bool _isSharing = false;
 
   Future<void> _showApplyBottomSheet() async {
-    final WallpaperApplyProvider applyProvider =
-        context.read<WallpaperApplyProvider>();
-    final bool hasPermission =
-        await applyProvider.ensurePermission(requestIfNeeded: true);
+    final WallpaperApplyProvider applyProvider = context
+        .read<WallpaperApplyProvider>();
+    final bool hasPermission = await applyProvider.ensurePermission(
+      requestIfNeeded: true,
+    );
     if (!mounted) return;
 
     if (!hasPermission) {
@@ -58,8 +60,8 @@ class _StaticWallpaperDetailScreenState
     BuildContext sheetContext,
     WallpaperTarget target,
   ) async {
-    final WallpaperApplyProvider applyProvider =
-        context.read<WallpaperApplyProvider>();
+    final WallpaperApplyProvider applyProvider = context
+        .read<WallpaperApplyProvider>();
     if (applyProvider.isApplying) return;
 
     final NavigatorState sheetNavigator = Navigator.of(sheetContext);
@@ -94,8 +96,9 @@ class _StaticWallpaperDetailScreenState
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        backgroundColor:
-            success ? const Color(0xFF1A7F44) : const Color(0xFFB23838),
+        backgroundColor: success
+            ? const Color(0xFF1A7F44)
+            : const Color(0xFFB23838),
         content: Text(message),
       ),
     );
@@ -129,8 +132,7 @@ class _StaticWallpaperDetailScreenState
                 Positioned(
                   top: 8,
                   left: 12,
-                  child: _CircleButton(
-                    icon: Icons.cancel_outlined,
+                  child: WallpaperDetailCloseButton(
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ),
@@ -138,149 +140,28 @@ class _StaticWallpaperDetailScreenState
                   left: 16,
                   right: 16,
                   bottom: 16,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(22),
-                    child: Container(
-                      color: Colors.black45,
-                      padding: const EdgeInsets.all(14),
-                      child: Row(
-                        children: <Widget>[
-                          Expanded(
-                            flex: 3,
-                            child: _DetailActionButton(
-                              onPressed: _showApplyBottomSheet,
-                              icon: const Icon(Icons.wallpaper_outlined),
-                              label: 'Apply',
-                              isPrimary: true,
+                  child: WallpaperDetailActionDock(
+                    onApply: _showApplyBottomSheet,
+                    applyIcon: const Icon(Icons.wallpaper_rounded),
+                    applyLabel: 'Apply',
+                    onShare: _isSharing ? null : _shareWallpaper,
+                    shareIcon: _isSharing
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.4,
+                              color: Colors.white,
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            flex: 2,
-                            child: _DetailActionButton(
-                              onPressed: _isSharing ? null : _shareWallpaper,
-                              icon: _isSharing
-                                  ? const SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.4,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : const Icon(Icons.share_outlined),
-                              label: _isSharing ? 'Sharing' : 'Share',
-                              isPrimary: false,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                          )
+                        : const Icon(Icons.ios_share_rounded),
+                    shareLabel: _isSharing ? 'Sharing' : 'Share',
                   ),
                 ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _DetailActionButton extends StatelessWidget {
-  const _DetailActionButton({
-    required this.onPressed,
-    required this.icon,
-    required this.label,
-    required this.isPrimary,
-  });
-
-  final VoidCallback? onPressed;
-  final Widget icon;
-  final String label;
-  final bool isPrimary;
-
-  @override
-  Widget build(BuildContext context) {
-    final Color start = isPrimary ? Colors.cyan : const Color(0x33FFFFFF);
-    final Color end = isPrimary ? const Color(0xFF8BC7FF) : const Color(0x1FFFFFFF);
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(999),
-        gradient: LinearGradient(colors: <Color>[start, end]),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: (isPrimary ? const Color(0xFF2F80ED) : Colors.black)
-                .withValues(alpha: isPrimary ? 0.34 : 0.18),
-            blurRadius: isPrimary ? 22 : 16,
-            offset: const Offset(0, 10),
-          ),
-        ],
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(999),
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(999),
-          child: Opacity(
-            opacity: onPressed == null ? 0.62 : 1,
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: isPrimary ? 18 : 14,
-                vertical: isPrimary ? 15 : 13,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  IconTheme.merge(
-                    data: const IconThemeData(color: Colors.white, size: 20),
-                    child: icon,
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'RobotoSlab',
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CircleButton extends StatelessWidget {
-  const _CircleButton({required this.icon, required this.onPressed});
-
-  final IconData icon;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(3),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-      ),
-      child: IconButton(
-        icon: Icon(icon, color: Colors.cyan, size: 30,),
-        onPressed: onPressed,
       ),
     );
   }

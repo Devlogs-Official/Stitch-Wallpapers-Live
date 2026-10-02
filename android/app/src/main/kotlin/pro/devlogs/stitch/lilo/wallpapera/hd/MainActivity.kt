@@ -1,4 +1,4 @@
-package com.devlogs.stitch_wallpapers_live
+package pro.devlogs.stitch.lilo.wallpapera.hd
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -39,13 +39,23 @@ class ExternalLinks {
   /// privacy / terms surfaces.
   static Future<bool> openInAppBrowser(String url) => _openInAppBrowser(url);
 
+  /// Opens a URL in the user's default external browser.
+  static Future<bool> openExternalBrowser(String url) async {
+    try {
+      return await launchUrl(
+        Uri.parse(url),
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
+      debugPrint('External browser launch failed: $e');
+      return false;
+    }
+  }
+
   static Future<bool> _openInAppBrowser(String url) async {
     final Uri uri = Uri.parse(url);
     try {
-      final bool ok = await launchUrl(
-        uri,
-        mode: LaunchMode.inAppBrowserView,
-      );
+      final bool ok = await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
       if (ok) {
         return true;
       }
@@ -93,11 +103,7 @@ class ExternalLinks {
     await Dio().download(url, filePath);
 
     await SharePlus.instance.share(
-      ShareParams(
-        text: title,
-        subject: title,
-        files: <XFile>[XFile(filePath)],
-      ),
+      ShareParams(text: title, subject: title, files: <XFile>[XFile(filePath)]),
     );
   }
 

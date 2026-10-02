@@ -55,128 +55,210 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       drawer: const _HomeDrawer(),
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.background,
-        title: const Text(
-          "Stitch Wallpapers",
-          style: TextStyle(
-            fontFamily: "RobotoSlab",
-            fontWeight: FontWeight.w800
-          ),
-        ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            onPressed: () {
-              Scaffold.of(context).openDrawer();
-            },
-            icon: Image.asset(
-              "assets/icons/menu-button.png",
-              height: 22,
-              width: 22,
-              color: Colors.white,
-            ),
+      body: SafeArea(
+        bottom: false,
+        child: RefreshIndicator(
+          color: AppColors.primary,
+          onRefresh: () async {
+            await Future.wait(<Future<void>>[
+              wallpaperProvider.refreshStatic(),
+              wallpaperProvider.refreshLive(),
+            ]);
+          },
+          child: CustomScrollView(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: <Widget>[
+              SliverToBoxAdapter(
+                child: _GalleryHeader(onOpenLiveTab: widget.onOpenLiveTab),
+              ),
+              if (wallpaperProvider.isLoadingStatic &&
+                  wallpaperProvider.staticWallpapers.isEmpty)
+                const SliverToBoxAdapter(
+                  child: ShimmerWallpaperGrid(
+                    itemCount: 6,
+                    padding: EdgeInsets.fromLTRB(16, 0, 16, 120),
+                  ),
+                )
+              else if (wallpaperProvider.staticError != null &&
+                  wallpaperProvider.staticWallpapers.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _ErrorState(
+                    message: wallpaperProvider.staticError!,
+                    onRetry: () => wallpaperProvider.retryStatic(),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 128),
+                  sliver: SliverGrid(
+                    delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) {
+                        final int wallpaperCount =
+                            wallpaperProvider.staticWallpapers.length;
+                        if (index >= wallpaperCount) {
+                          if (wallpaperProvider.isLoadingMoreStatic) {
+                            return const _BottomLoaderTile();
+                          }
+                          if (wallpaperProvider.staticError != null &&
+                              wallpaperProvider.hasMoreStatic) {
+                            return _LoadMoreRetryTile(
+                              onRetry: () => wallpaperProvider.retryStatic(),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        }
+
+                        final WallpaperModel item =
+                            wallpaperProvider.staticWallpapers[index];
+                        return WallpaperGridCard(
+                          wallpaper: item,
+                          isFavorite: favoritesProvider.isFavorite(item),
+                          onFavoriteToggle: () =>
+                              favoritesProvider.toggleFavorite(item),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              AppPageTransitions.fadeSlide(
+                                StaticWallpaperDetailScreen(wallpaper: item),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      childCount:
+                          wallpaperProvider.staticWallpapers.length +
+                          (wallpaperProvider.hasMoreStatic ? 1 : 0),
+                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 14,
+                          mainAxisSpacing: 14,
+                          childAspectRatio: 0.69,
+                        ),
+                  ),
+                ),
+            ],
           ),
         ),
       ),
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            const SizedBox(height: 12,),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await Future.wait(<Future<void>>[
-                    wallpaperProvider.refreshStatic(),
-                    wallpaperProvider.refreshLive(),
-                  ]);
-                },
-                child: CustomScrollView(
-                  controller: _scrollController,
-                  slivers: <Widget>[
-                    // SliverToBoxAdapter(
-                    //   child: LiveWallpaperCard(
-                    //     onTap: () {
-                    //       widget.onOpenLiveTab?.call();
-                    //     },
-                    //   ),
-                    // ),
-                    if (wallpaperProvider.isLoadingStatic &&
-                        wallpaperProvider.staticWallpapers.isEmpty)
-                      const SliverToBoxAdapter(
-                        child: ShimmerWallpaperGrid(
-                          itemCount: 6,
-                          padding: EdgeInsets.fromLTRB(16, 0, 16, 120),
-                        ),
-                      )
-                    else if (wallpaperProvider.staticError != null &&
-                        wallpaperProvider.staticWallpapers.isEmpty)
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: _ErrorState(
-                          message: wallpaperProvider.staticError!,
-                          onRetry: () => wallpaperProvider.retryStatic(),
-                        ),
-                      )
-                    else
-                      SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
-                        sliver: SliverGrid(
-                          delegate: SliverChildBuilderDelegate(
-                            (BuildContext context, int index) {
-                              final int wallpaperCount =
-                                  wallpaperProvider.staticWallpapers.length;
-                              if (index >= wallpaperCount) {
-                                if (wallpaperProvider.isLoadingMoreStatic) {
-                                  return const _BottomLoaderTile();
-                                }
-                                if (wallpaperProvider.staticError != null &&
-                                    wallpaperProvider.hasMoreStatic) {
-                                  return _LoadMoreRetryTile(
-                                    onRetry: () =>
-                                        wallpaperProvider.retryStatic(),
-                                  );
-                                }
-                                return const SizedBox.shrink();
-                              }
+    );
+  }
+}
 
-                              final WallpaperModel item =
-                                  wallpaperProvider.staticWallpapers[index];
-                              return WallpaperGridCard(
-                                wallpaper: item,
-                                isFavorite: favoritesProvider.isFavorite(item),
-                                onFavoriteToggle: () =>
-                                    favoritesProvider.toggleFavorite(item),
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    AppPageTransitions.fadeSlide(
-                                      StaticWallpaperDetailScreen(
-                                        wallpaper: item,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                            childCount:
-                                wallpaperProvider.staticWallpapers.length +
-                                (wallpaperProvider.hasMoreStatic ? 1 : 0),
-                          ),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 12,
-                                childAspectRatio: 0.72,
-                              ),
-                        ),
-                      ),
-                  ],
+class _GalleryHeader extends StatelessWidget {
+  const _GalleryHeader({this.onOpenLiveTab});
+
+  final VoidCallback? onOpenLiveTab;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Builder(
+            builder: (BuildContext context) => Row(
+              children: <Widget>[
+                InkWell(
+                  onTap: () => Scaffold.of(context).openDrawer(),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Ink(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: const Icon(
+                      Icons.grid_view_rounded,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Stitch Wallpapers',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          InkWell(
+            onTap: onOpenLiveTab,
+            borderRadius: BorderRadius.circular(22),
+            child: Container(
+              height: 138,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(22),
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.25),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+                image: const DecorationImage(
+                  image: AssetImage('assets/images/live_wallpapers_hero.png'),
+                  fit: BoxFit.cover,
                 ),
               ),
+              child: Stack(
+                children: <Widget>[
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(22),
+                        gradient: const LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: <Color>[Color(0x88091741), Color(0x00091741)],
+                          stops: <double>[0, 0.7],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const Positioned(
+                    left: 18,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: Text(
+                        'Explore the best\nlive wallpapers',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          height: 1.22,
+                          fontWeight: FontWeight.w900,
+                          shadows: <Shadow>[
+                            Shadow(color: Color(0x99000000), blurRadius: 8),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 22),
+          const Text(
+            'HD Wallpapers',
+            style: TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.w900,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -196,25 +278,16 @@ class _HomeDrawer extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Colors.cyan,
-              Colors.cyan,
-              Colors.cyan,
-              // Colors.white,
-            ],
+            colors: [AppColors.primary, Color(0xFF7C64ED), Color(0xFF4E3CB5)],
           ),
         ),
 
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 18,
-              vertical: 18,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
 
             child: Column(
               children: [
-
                 /// HEADER
                 Container(
                   width: double.infinity,
@@ -225,18 +298,18 @@ class _HomeDrawer extends StatelessWidget {
 
                     gradient: LinearGradient(
                       colors: [
-                        Colors.cyan.withOpacity(0.18),
-                        Colors.white.withOpacity(0.05),
+                        AppColors.primary.withValues(alpha: 0.18),
+                        Colors.white.withValues(alpha: 0.05),
                       ],
                     ),
 
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.08),
+                      color: Colors.white.withValues(alpha: 0.08),
                     ),
 
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.cyan.withOpacity(0.18),
+                        color: AppColors.primary.withValues(alpha: 0.18),
                         blurRadius: 25,
                         spreadRadius: 1,
                       ),
@@ -245,7 +318,6 @@ class _HomeDrawer extends StatelessWidget {
 
                   child: Column(
                     children: [
-
                       /// IMAGE
                       ClipRRect(
                         borderRadius: BorderRadius.circular(20),
@@ -276,7 +348,7 @@ class _HomeDrawer extends StatelessWidget {
                       Text(
                         "Cute • Live • HD Wallpapers",
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withValues(alpha: 0.7),
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -298,7 +370,6 @@ class _HomeDrawer extends StatelessWidget {
 
                 const SizedBox(height: 14),
 
-
                 _drawerTile(
                   icon: Icons.share_rounded,
                   title: "Share App",
@@ -311,10 +382,26 @@ class _HomeDrawer extends StatelessWidget {
                       if (!context.mounted) return;
 
                       ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Sharing unavailable")),
+                      );
+                    }
+                  },
+                ),
+
+                const SizedBox(height: 14),
+
+                _drawerTile(
+                  icon: Icons.privacy_tip_outlined,
+                  title: "Privacy Policy",
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final bool opened = await ExternalLinks.openExternalBrowser(
+                      AppConstants.privacyPolicyUrl,
+                    );
+                    if (!opened && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text(
-                            "Sharing unavailable",
-                          ),
+                          content: Text('Could not open Privacy Policy'),
                         ),
                       );
                     }
@@ -324,9 +411,21 @@ class _HomeDrawer extends StatelessWidget {
                 const SizedBox(height: 14),
 
                 _drawerTile(
-                  icon: Icons.info_outline_rounded,
-                  title: "About App",
-                  onTap: () {},
+                  icon: Icons.description_outlined,
+                  title: "Terms & Conditions",
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final bool opened = await ExternalLinks.openInAppBrowser(
+                      AppConstants.termsAndConditionsUrl,
+                    );
+                    if (!opened && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Could not open Terms & Conditions'),
+                        ),
+                      );
+                    }
+                  },
                 ),
 
                 const Spacer(),
@@ -335,7 +434,7 @@ class _HomeDrawer extends StatelessWidget {
                 Text(
                   "Version 1.0.0",
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.45),
+                    color: Colors.white.withValues(alpha: 0.45),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -363,24 +462,18 @@ class _HomeDrawer extends StatelessWidget {
         onTap: onTap,
 
         child: Ink(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
 
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
 
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
 
-            border: Border.all(
-              color: Colors.white.withOpacity(0.06),
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
           ),
 
           child: Row(
             children: [
-
               /// ICON BOX
               Container(
                 width: 48,
@@ -391,24 +484,20 @@ class _HomeDrawer extends StatelessWidget {
 
                   gradient: LinearGradient(
                     colors: [
-                      Colors.cyan.withOpacity(0.8),
-                      Colors.cyanAccent.withOpacity(0.4),
+                      AppColors.primary.withValues(alpha: 0.8),
+                      AppColors.accent.withValues(alpha: 0.55),
                     ],
                   ),
 
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.cyan.withOpacity(0.3),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                       blurRadius: 12,
                     ),
                   ],
                 ),
 
-                child:  Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 22,
-                ),
+                child: Icon(icon, color: Colors.white, size: 22),
               ),
 
               const SizedBox(width: 16),
@@ -427,7 +516,7 @@ class _HomeDrawer extends StatelessWidget {
 
               Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.white.withValues(alpha: 0.4),
                 size: 16,
               ),
             ],
