@@ -7,38 +7,27 @@ import 'package:flutter/services.dart';
 import 'package:gal/gal.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:wallpaper_manager_plus/wallpaper_manager_plus.dart';
 
-enum WallpaperTarget {
-  home,
-  lock,
-  both,
-}
+enum WallpaperTarget { home, lock, both }
 
 class WallpaperApplyResult {
-  const WallpaperApplyResult({
-    required this.success,
-    required this.message,
-  });
+  const WallpaperApplyResult({required this.success, required this.message});
 
   final bool success;
   final String message;
 }
 
 class WallpaperService {
-  WallpaperService({
-    Dio? dio,
-    MethodChannel? channel,
-  })  : _dio = dio ?? Dio(),
-        _channel = channel ??
-            const MethodChannel(AppConstants.androidLiveWallpaperMethodChannel);
+  WallpaperService({Dio? dio, MethodChannel? channel})
+    : _dio = dio ?? Dio(),
+      _channel =
+          channel ??
+          const MethodChannel(AppConstants.androidLiveWallpaperMethodChannel);
 
   final Dio _dio;
   final MethodChannel _channel;
 
-  Future<bool> ensureApplyPermission({
-    bool requestIfNeeded = true,
-  }) async {
+  Future<bool> ensureApplyPermission({bool requestIfNeeded = true}) async {
     if (requestIfNeeded) {
       return _requestPermission();
     }
@@ -49,6 +38,39 @@ class WallpaperService {
     required String imageUrl,
     required WallpaperTarget target,
   }) async {
+    if (Platform.isAndroid) {
+      try {
+        final String? message = await _channel.invokeMethod<String>(
+          'applyWallpaper',
+          <String, String>{'imageUrl': imageUrl, 'target': target.name},
+        );
+        return WallpaperApplyResult(
+          success: true,
+          message: message ?? 'Wallpaper applied successfully.',
+        );
+      } on PlatformException catch (error) {
+        debugPrint('Wallpaper apply error: ${error.code} ${error.message}');
+        return WallpaperApplyResult(
+          success: false,
+          message:
+              error.message ?? 'Failed to apply wallpaper. Please try again.',
+        );
+      } catch (error) {
+        debugPrint('Wallpaper apply error: $error');
+        return const WallpaperApplyResult(
+          success: false,
+          message: 'Failed to apply wallpaper. Please try again.',
+        );
+      }
+    }
+
+    if (!Platform.isIOS) {
+      return const WallpaperApplyResult(
+        success: false,
+        message: 'Wallpaper applying is not supported on this platform.',
+      );
+    }
+
     File? tempFile;
     try {
       final bool permissionGranted = await _requestPermission();
@@ -61,29 +83,13 @@ class WallpaperService {
 
       tempFile = await _prepareImageFile(imageUrl);
 
-      if (Platform.isAndroid) {
-        final WallpaperManagerPlus manager = WallpaperManagerPlus();
-        await manager.setWallpaper(tempFile, _androidLocation(target));
-        return const WallpaperApplyResult(
-          success: true,
-          message: 'Wallpaper applied successfully.',
-        );
-      }
-
-      if (Platform.isIOS) {
-        await Gal.putImage(tempFile.path);
-        return const WallpaperApplyResult(
-          success: true,
-          message: 'Wallpaper saved. Please set it manually from Photos.',
-        );
-      }
-
+      await Gal.putImage(tempFile.path);
       return const WallpaperApplyResult(
-        success: false,
-        message: 'Wallpaper applying is not supported on this platform.',
+        success: true,
+        message: 'Wallpaper saved. Please set it manually from Photos.',
       );
-    } catch (e) {
-      debugPrint('Wallpaper apply error: $e');
+    } catch (error) {
+      debugPrint('Wallpaper apply error: $error');
       return const WallpaperApplyResult(
         success: false,
         message: 'Failed to apply wallpaper. Please try again.',
@@ -112,13 +118,13 @@ class WallpaperService {
     }
 
     try {
-      await _channel.invokeMethod<void>('applyLive', <String, String>{
-        'url': videoUrl,
-        'id': id,
-      });
-      return const WallpaperApplyResult(
+      final String? message = await _channel.invokeMethod<String>(
+        'applyLiveWallpaper',
+        <String, String>{'videoUrl': videoUrl, 'id': id},
+      );
+      return WallpaperApplyResult(
         success: true,
-        message: 'Pick "Stitch Wallpapers" to set it.',
+        message: message ?? 'Choose Set wallpaper on the next screen.',
       );
     } on PlatformException catch (e) {
       debugPrint('Live wallpaper apply error: ${e.code} ${e.message}');
@@ -131,7 +137,8 @@ class WallpaperService {
         case 'DOWNLOAD_FAILED':
           return const WallpaperApplyResult(
             success: false,
-            message: 'Failed to download live wallpaper. Check your connection.',
+            message:
+                'Failed to download live wallpaper. Check your connection.',
           );
         case 'UNSUPPORTED':
           return const WallpaperApplyResult(
@@ -160,7 +167,8 @@ class WallpaperService {
 
   Future<File> _prepareImageFile(String imageUrl) async {
     final Directory tempDir = await getTemporaryDirectory();
-    final String filePath = '${tempDir.path}/wallpaper_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final String filePath =
+        '${tempDir.path}/wallpaper_${DateTime.now().millisecondsSinceEpoch}.jpg';
     await _dio.download(imageUrl, filePath);
     return File(filePath);
   }
@@ -175,7 +183,8 @@ class WallpaperService {
     // iOS saves the image to the user's Photos library, which requires the
     // photos add-only permission.
     if (Platform.isIOS) {
-      final PermissionStatus photosStatus = await Permission.photosAddOnly.request();
+      final PermissionStatus photosStatus = await Permission.photosAddOnly
+          .request();
       return photosStatus.isGranted || photosStatus.isLimited;
     }
 
@@ -188,22 +197,12 @@ class WallpaperService {
     }
 
     if (Platform.isIOS) {
-      final PermissionStatus photosStatus = await Permission.photosAddOnly.status;
+      final PermissionStatus photosStatus =
+          await Permission.photosAddOnly.status;
       return photosStatus.isGranted || photosStatus.isLimited;
     }
 
     return false;
-  }
-
-  int _androidLocation(WallpaperTarget target) {
-    switch (target) {
-      case WallpaperTarget.home:
-        return WallpaperManagerPlus.homeScreen;
-      case WallpaperTarget.lock:
-        return WallpaperManagerPlus.lockScreen;
-      case WallpaperTarget.both:
-        return WallpaperManagerPlus.bothScreens;
-    }
   }
 
   Future<void> _deleteTempFile(File? file) async {

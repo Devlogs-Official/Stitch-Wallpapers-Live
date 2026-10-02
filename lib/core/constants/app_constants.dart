@@ -8,7 +8,7 @@ class AppConstants {
   static const String appVersion = '1.0.0';
 
   /// Android applicationId / Play Store package id used by Rate + Share.
-  static const String androidPackageId = 'com.example.stitch_live_wallpapers';
+  static const String androidPackageId = 'pro.devlogs.stitch.lilo.wallpapers.hd';
 
   /// MethodChannel for Android live wallpaper (must match MainActivity).
   static const String androidLiveWallpaperMethodChannel =
