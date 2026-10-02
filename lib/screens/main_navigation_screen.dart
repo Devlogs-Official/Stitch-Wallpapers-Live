@@ -61,9 +61,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = <Widget>[
-      HomeScreen(
-        onOpenLiveTab: () => setState(() => _currentIndex = 1),
-      ),
+      HomeScreen(onOpenLiveTab: () => setState(() => _currentIndex = 1)),
       const LiveWallpaperScreen(),
       const FavoritesScreen(),
     ];
@@ -75,10 +73,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       },
       child: Scaffold(
         extendBody: true,
-        body: IndexedStack(
-          index: _currentIndex,
-          children: screens,
-        ),
+        body: IndexedStack(index: _currentIndex, children: screens),
         bottomNavigationBar: _PremiumBottomNavBar(
           currentIndex: _currentIndex,
           onTap: (int index) => setState(() => _currentIndex = index),
@@ -89,10 +84,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 }
 
 class _PremiumBottomNavBar extends StatelessWidget {
-  const _PremiumBottomNavBar({
-    required this.currentIndex,
-    required this.onTap,
-  });
+  const _PremiumBottomNavBar({required this.currentIndex, required this.onTap});
 
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -102,12 +94,15 @@ class _PremiumBottomNavBar extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
     final Color background =
-        (isDark ? const Color(0xFF101722) : AppColors.primary).withValues(alpha: 0.82);
-    final Color border =
-        (isDark ? const Color(0xFF314156) : AppColors.border).withValues(alpha: 0.72);
+        (isDark ? const Color(0xFF101722) : AppColors.primary).withValues(
+          alpha: 0.82,
+        );
+    final Color border = (isDark ? const Color(0xFF314156) : AppColors.border)
+        .withValues(alpha: 0.72);
     final Color active = isDark ? AppColors.primary : AppColors.background;
-    final Color inactive =
-        isDark ? const Color(0xFF9AA7BA) : AppColors.background;
+    final Color inactive = isDark
+        ? const Color(0xFF9AA7BA)
+        : AppColors.background;
 
     return SafeArea(
       minimum: const EdgeInsets.fromLTRB(18, 0, 18, 12),
@@ -191,59 +186,88 @@ class _PremiumNavItem extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(24),
           onTap: onTap,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 260),
-            curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              color: isActive
-                  ? activeColor.withValues(alpha: 0.14)
-                  : Colors.transparent,
-              boxShadow: isActive
-                  ? <BoxShadow>[
-                      BoxShadow(
-                        color: activeColor.withValues(alpha: 0.28),
-                        blurRadius: 18,
-                        spreadRadius: -5,
-                      ),
-                    ]
-                  : null,
+          child: TweenAnimationBuilder<double>(
+            // A perspective transform makes the outgoing item lean back while
+            // the selected one lifts and settles into place.
+            tween: Tween<double>(
+              begin: isActive ? 1 : 0,
+              end: isActive ? 1 : 0,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                AnimatedScale(
-                  scale: isActive ? 1.12 : 1,
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeOutCubic,
-                  child: Icon(
-                    icon,
-                    color: isActive ? activeColor : inactiveColor,
-                    size: 23,
+            duration: const Duration(milliseconds: 420),
+            curve: Curves.easeOutBack,
+            builder:
+                (BuildContext context, double selectedness, Widget? child) {
+                  final Matrix4 transform = Matrix4.identity()
+                    ..setEntry(3, 2, 0.0018)
+                    ..translateByDouble(0.0, (1 - selectedness) * 4, 0.0, 1.0)
+                    ..rotateX((1 - selectedness) * -0.18)
+                    ..scaleByDouble(
+                      0.94 + (selectedness * 0.06),
+                      0.94 + (selectedness * 0.06),
+                      1.0,
+                      1.0,
+                    );
+
+                  return Transform(
+                    alignment: Alignment.bottomCenter,
+                    transform: transform,
+                    child: child,
+                  );
+                },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 260),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                color: isActive
+                    ? activeColor.withValues(alpha: 0.14)
+                    : Colors.transparent,
+                boxShadow: isActive
+                    ? <BoxShadow>[
+                        BoxShadow(
+                          color: activeColor.withValues(alpha: 0.28),
+                          blurRadius: 18,
+                          spreadRadius: -5,
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  AnimatedScale(
+                    scale: isActive ? 1.12 : 1,
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOutCubic,
+                    child: Icon(
+                      icon,
+                      color: isActive ? activeColor : inactiveColor,
+                      size: 23,
+                    ),
                   ),
-                ),
-                AnimatedSize(
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeOutCubic,
-                  child: isActive
-                      ? Padding(
-                          padding: const EdgeInsets.only(left: 7),
-                          child: Text(
-                            label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: activeColor,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOutCubic,
+                    child: isActive
+                        ? Padding(
+                            padding: const EdgeInsets.only(left: 7),
+                            child: Text(
+                              label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: activeColor,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -268,10 +292,7 @@ class _ExitAppDialog extends StatelessWidget {
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: <Color>[
-                  Color(0xFFFFFFFF),
-                  Color(0xFFF4F7FD),
-                ],
+                colors: <Color>[Color(0xFFFFFFFF), Color(0xFFF4F7FD)],
               ),
               boxShadow: const <BoxShadow>[
                 BoxShadow(
@@ -346,7 +367,7 @@ class _ExitAppDialog extends StatelessWidget {
                       child: FilledButton(
                         onPressed: () => Navigator.of(context).pop(true),
                         style: FilledButton.styleFrom(
-                          backgroundColor:  Colors.cyan,
+                          backgroundColor: Colors.cyan,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
